@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>3D Minecraft FX Skin Gallery</title>
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    background:#000;
+    font-family: 'Courier New', monospace;
+}
+
+canvas{
+    display:block;
+}
+
+#skinUpload{
+    position:absolute;
+    top:20px;
+    left:20px;
+    z-index:10;
+    color:white;
+    background: rgba(0,0,0,0.5);
+    padding: 10px;
+    border: 2px solid #00ffff;
+    border-radius: 5px;
+    text-shadow: 0 0 10px #00ffff;
+    box-shadow: 0 0 20px #00ffff, inset 0 0 20px rgba(0,255,255,0.2);
+}
+
+#title{
+    position:absolute;
+    top:20px;
+    right:20px;
+    z-index:10;
+    color:#00ffff;
+    font-size:42px;
+    font-weight:bold;
+    text-shadow: 
+        0 0 10px #00ffff,
+        0 0 20px #00ffff,
+        0 0 40px #ff00ff,
+        0 0 60px #ff00ff;
+    letter-spacing: 4px;
+    transform: perspective(500px) rotateY(-5deg);
+    animation: titlePulse 2s ease-in-out infinite;
+}
+
+#subtitle{
+    position:absolute;
+    top:90px;
+    right:20px;
+    z-index:10;
+    color:#ff00ff;
+    font-size:18px;
+    text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+    letter-spacing: 2px;
+    text-align: right;
+}
+
+@keyframes titlePulse {
+    0%, 100% { 
+        text-shadow: 
+            0 0 10px #00ffff,
+            0 0 20px #00ffff,
+            0 0 40px #ff00ff,
+            0 0 60px #ff00ff;
+        transform: perspective(500px) rotateY(-5deg) scale(1);
+    }
+    50% { 
+        text-shadow: 
+            0 0 20px #00ffff,
+            0 0 40px #00ffff,
+            0 0 60px #ff00ff,
+            0 0 80px #ff00ff;
+        transform: perspective(500px) rotateY(-5deg) scale(1.05);
+    }
+}
+
+#instructions{
+    position:absolute;
+    bottom:20px;
+    left:20px;
+    z-index:10;
+    color:#fff;
+    font-size:14px;
+    background: rgba(0,0,0,0.5);
+    padding: 10px 15px;
+    border: 1px solid #ff00ff;
+    border-radius: 5px;
+    text-shadow: 0 0 5px #ff00ff;
+}
+
+#fart{
+    position:absolute;
+    z-index:5;
+    font-size:60px;
+    pointer-events:none;
+    display:none;
+    filter: drop-shadow(0 0 20px #8B4513) drop-shadow(0 0 40px #654321);
+}
+
+.fart-cloud {
+    position:absolute;
+    z-index:4;
+    font-size:50px;
+    pointer-events:none;
+    filter: drop-shadow(0 0 15px #8B4513);
+    animation: floatUp 2s ease-out forwards;
+}
+
+@keyframes floatUp {
+    0% { 
+        opacity: 1; 
+        transform: translate(0,0) scale(0.5) rotate(0deg); 
+    }
+    50% { 
+        opacity: 0.8; 
+        transform: translate(30px,-50px) scale(1.2) rotate(180deg); 
+    }
+    100% { 
+        opacity: 0; 
+        transform: translate(60px,-150px) scale(1.8) rotate(360deg); 
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="title">MINECRAFT FX</div>
+<div id="subtitle">★ ULTIMATE SKIN GALLERY ★</div>
+<div id="instructions">🖱️ DRAG TO ROTATE PLAYER • F TO FART • UPLOAD YOUR SKIN ABOVE</div>
+<input id="skinUpload" type="file" accept="image/png">
+<div id="fart">💨</div>
+
+<script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+
+// SCENE
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x020008);
+scene.fog = new THREE.Fog(0x020008, 5, 30);
+
+// CAMERA
+const camera = new THREE.PerspectiveCamera(60, innerWidth/innerHeight, .1, 100);
+camera.position.set(0, 2.5, 8);
+
+// RENDERER
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// LIGHTS
+const light = new THREE.PointLight(0x00ffff, 15, 25);
+light.position.set(3, 4, 5);
+scene.add(light);
+
+const light2 = new THREE.PointLight(0xff00ff, 12, 25);
+light2.position.set(-3, 2, 3);
+scene.add(light2);
+
+const light3 = new THREE.PointLight(0xffff00, 8, 20);
+light3.position.set(0, 5, -5);
+scene.add(light3);
+
+const ambient = new THREE.AmbientLight(0x404040, 2);
+scene.add(ambient);
+
+// PLAYER CREATOR
+const player = new THREE.Group();
+scene.add(player);
+
+function cube(size, pos, color){
+    const geo = new THREE.BoxGeometry(size.x, size.y, size.z);
+    const mat = new THREE.MeshStandardMaterial({
+        color: color,
+        emissive: color,
+        emissiveIntensity: 0.5
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(pos.x, pos.y, pos.z);
+    player.add(mesh);
+    return mesh;
+}
+
+const head = cube({x:1,y:1,z:1}, {x:0,y:2.5,z:0}, 0xffffff);
+const body = cube({x:1.2,y:1.2,z:.6}, {x:0,y:1.2,z:0}, 0xffffff);
+const leg1 = cube({x:.45,y:1,z:.45}, {x:-.35,y:.2,z:0}, 0xffffff);
+const leg2 = cube({x:.45,y:1,z:.45}, {x:.35,y:.2,z:0}, 0xffffff);
+const arm1 = cube({x:.35,y:1.2,z:.35}, {x:-.75,y:1.2,z:0}, 0xffffff);
+const arm2 = cube({x:.35,y:1.2,z:.35}, {x:.75,y:1.2,z:0}, 0xffffff);
+
+const parts = [head, body, leg1, leg2, arm1, arm2];
+
+// Add eyes to make face visible
+const eyeGeo = new THREE.BoxGeometry(.15, .15, .05);
+const eyeMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x00ffff, emissiveIntensity: 1 });
+const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+eyeL.position.set(-.25, 2.55, .52);
+player.add(eyeL);
+const eyeR = new THREE.Mesh(eyeGeo, eyeMat);
+eyeR.position.set(.25, 2.55, .52);
+player.add(eyeR);
+
+// Add a glowing crown
+const crownGeo = new THREE.BoxGeometry(.8, .2, .8);
+const crownMat = new THREE.MeshStandardMaterial({ color: 0xffaa00, emissive: 0xffaa00, emissiveIntensity: 1 });
+const crown = new THREE.Mesh(crownGeo, crownMat);
+crown.position.set(0, 3.1, 0);
+player.add(crown);
+
+// SKIN UPLOAD
+const upload = document.getElementById("skinUpload");
+
+upload.onchange = e => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const texture = new THREE.TextureLoader().load(URL.createObjectURL(file), tex => {
+        tex.magFilter = THREE.NearestFilter;
+        tex.minFilter = THREE.NearestFilter;
+    });
+    parts.forEach(p => {
+        p.material = new THREE.MeshStandardMaterial({
+            map: texture,
+            emissive: 0x444444,
+            emissiveIntensity: 0.3,
+            transparent: true
+        });
+    });
+};
+
+// FLOATING BACKGROUND SKINS
+const floatingSkins = [
+    "https://i.imgur.com/Pkub88J.png",
+    "https://p.novaskin.me/1493473074.png",
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyzK1n1pC25st-KKFoxMU5ohamKXeLJtU0f8CvglcvMg&s=10"
+];
+
+const floaters = [];
+
+function createFloater(url, x, y, z){
+    const group = new THREE.Group();
+    const texture = new THREE.TextureLoader().load(url, t => {
+        t.magFilter = THREE.NearestFilter;
+        t.minFilter = THREE.NearestFilter;
+    });
+    const material = new THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true
+    });
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 3), material);
+    
+    // Add glow border
+    const borderGeo = new THREE.PlaneGeometry(2.2, 3.2);
+    const borderMat = new THREE.MeshBasicMaterial({ 
+        color: 0x00ffff, 
+        transparent: true, 
+        opacity: 0.4,
+        side: THREE.DoubleSide
+    });
+    const border = new THREE.Mesh(borderGeo, borderMat);
+    border.position.z = -0.05;
+    group.add(border);
+    
+    group.add(mesh);
+    group.position.set(x, y, z);
+    scene.add(group);
+    return group;
+}
+
+floaters.push(createFloater(floatingSkins[0], -5, 3, -8));
+floaters.push(createFloater(floatingSkins[1], 5, 4, -10));
+floaters.push(createFloater(floatingSkins[2], 0, 6, -12));
+
+// FLOATING MINECRAFT BLOCKS
+const blockGeo = new THREE.BoxGeometry(.5, .5, .5);
+const blockColors = [0x00ff00, 0xff0000, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff];
+const blocks = [];
+
+for(let i = 0; i < 20; i++){
+    const mat = new THREE.MeshStandardMaterial({
+        color: blockColors[i % blockColors.length],
+        emissive: blockColors[i % blockColors.length],
+        emissiveIntensity: 0.6
+    });
+    const block = new THREE.Mesh(blockGeo, mat);
+    block.position.set(
+        (Math.random()-.5) * 15,
+        (Math.random()-.5) * 10 + 3,
+        (Math.random()-.5) * 10 - 5
+    );
+    block.userData = {
+        rotSpeed: Math.random() * 0.02,
+        floatOffset: Math.random() * Math.PI * 2
+    };
+    scene.add(block);
+    blocks.push(block);
+}
+
+// PARTICLES (stars)
+const pgeo = new THREE.BufferGeometry();
+let points = [];
+for(let i = 0; i < 800; i++){
+    points.push(
+        (Math.random()-.5) * 30,
+        (Math.random()-.5) * 30,
+        (Math.random()-.5) * 30
+    );
+}
+pgeo.setAttribute("position", new THREE.Float32BufferAttribute(points, 3));
+
+const stars = new THREE.Points(pgeo, new THREE.PointsMaterial({
+    color: 0x00ffff,
+    size: .06
+}));
+scene.add(stars);
+
+// Rainbow particles
+const rainbowGeo = new THREE.BufferGeometry();
+let rainbowPoints = [];
+for(let i = 0; i < 200; i++){
+    rainbowPoints.push(
+        (Math.random()-.5) * 20,
+        (Math.random()-.5) * 20,
+        (Math.random()-.5) * 20
+    );
+}
+rainbowGeo.setAttribute("position", new THREE.Float32BufferAttribute(rainbowPoints, 3));
+
+const rainbowStars = new THREE.Points(rainbowGeo, new THREE.PointsMaterial({
+    color: 0xff00ff,
+    size: .08
+}));
+scene.add(rainbowStars);
+
+// GROUND PLANE
+const groundGeo = new THREE.PlaneGeometry(30, 30);
+const groundMat = new THREE.MeshStandardMaterial({
+    color: 0x111122,
+    emissive: 0x000044,
+    emissiveIntensity: 0.3,
+    wireframe: true
+});
+const ground = new THREE.Mesh(groundGeo, groundMat);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -1;
+scene.add(ground);
+
+// ROTATION CONTROL
+let drag = false;
+let last = 0;
+
+renderer.domElement.onpointerdown = e => {
+    drag = true;
+    last = e.clientX;
+};
+renderer.domElement.onpointerup = () => { drag = false; };
+renderer.domElement.onpointermove = e => {
+    if(drag){
+        player.rotation.y += (e.clientX - last) * .01;
+        last = e.clientX;
+    }
+};
+
+// FART SYSTEM
+const fart = document.getElementById("fart");
+const fartEmojis = ["💨", "💨", "🌫️", "☁️", "💨", "☁️", "💨"];
+
+function createFart(x, y){
+    const cloud = document.createElement("div");
+    cloud.className = "fart-cloud";
+    cloud.textContent = fartEmojis[Math.floor(Math.random() * fartEmojis.length)];
+    cloud.style.left = x + "px";
+    cloud.style.top = y + "px";
+    document.body.appendChild(cloud);
+    setTimeout(() => cloud.remove(), 2000);
+}
+
+let fartInterval;
+function startFarting(){
+    // Position behind player
+    const playerWorldPos = new THREE.Vector3();
+    player.getWorldPosition(playerWorldPos);
+    
+    const vector = playerWorldPos.clone();
+    vector.project(camera);
+    
+    const x = (vector.x * .5 + .5) * innerWidth;
+    const y = (-vector.y * .5 + .5) * innerHeight;
+    
+    // Offset behind player
+    const offsetX = -Math.sin(player.rotation.y) * 50;
+    const offsetY = 30;
+    
+    fart.style.display = "block";
+    fart.style.left = (x + offsetX - 30) + "px";
+    fart.style.top = (y + offsetY) + "px";
+    
+    // Create multiple clouds
+    if(!fartInterval){
+        fartInterval = setInterval(() => {
+            for(let i = 0; i < 3; i++){
+                createFart(
+                    x + offsetX - 30 + (Math.random() - .5) * 40,
+                    y + offsetY + (Math.random() - .5) * 20
+                );
+            }
+        }, 100);
+    }
+}
+
+function stopFarting(){
+    fart.style.display = "none";
+    if(fartInterval){
+        clearInterval(fartInterval);
+        fartInterval = null;
+    }
+}
+
+let fKeyDown = false;
+
+addEventListener("keydown", e => {
+    if(e.key.toLowerCase() === "f" && !fKeyDown){
+        fKeyDown = true;
+        startFarting();
+    }
+});
+
+addEventListener("keyup", e => {
+    if(e.key.toLowerCase() === "f"){
+        fKeyDown = false;
+        stopFarting();
+    }
+});
+
+// ANIMATION
+function animate(){
+    requestAnimationFrame(animate);
+    
+    const time = Date.now() * .001;
+    
+    // Player floating
+    player.position.y = Math.sin(time * 2) * .3;
+    player.rotation.y += .005;
+    
+    // Crown glow pulse
+    crownMat.emissiveIntensity = 1 + Math.sin(time * 3) * .5;
+    crown.rotation.y += .02;
+    
+    // Light animation
+    light.intensity = 15 + Math.sin(time * 2) * 5;
+    light2.intensity = 12 + Math.sin(time * 1.5) * 4;
+    
+    // Stars rotation
+    stars.rotation.y += .001;
+    stars.rotation.x += .0005;
+    
+    // Rainbow stars
+    rainbowStars.rotation.y -= .002;
+    rainbowStars.rotation.z += .001;
+    
+    // Floaters
+    floaters.forEach((g, i) => {
+        g.position.y += Math.sin(time * 2 + i) * .003;
+        g.rotation.y = Math.sin(time + i) * .3;
+        g.rotation.z = Math.cos(time * .5 + i) * .1;
+    });
+    
+    // Blocks
+    blocks.forEach((b, i) => {
+        b.rotation.x += b.userData.rotSpeed;
+        b.rotation.y += b.userData.rotSpeed * .7;
+        b.position.y += Math.sin(time * 2 + b.userData.floatOffset) * .005;
+    });
+    
+    // Fart following player
+    if(fart.style.display === "block"){
+        const playerWorldPos = new THREE.Vector3();
+        player.getWorldPosition(playerWorldPos);
+        const vector = playerWorldPos.clone();
+        vector.project(camera);
+        const x = (vector.x * .5 + .5) * innerWidth;
+        const y = (-vector.y * .5 + .5) * innerHeight;
+        const offsetX = -Math.sin(player.rotation.y) * 60;
+        const offsetY = 40;
+        fart.style.left = (x + offsetX) + "px";
+        fart.style.top = (y + offsetY) + "px";
+        fart.style.transform = `scale(${1 + Math.sin(time * 10) * .2})`;
+    }
+    
+    // Camera look
+    camera.lookAt(0, 2, 0);
+    
+    renderer.render(scene, camera);
+}
+
+animate();
+
+// RESIZE
+addEventListener("resize", () => {
+    camera.aspect = innerWidth / innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+
+</body>
+</html>
